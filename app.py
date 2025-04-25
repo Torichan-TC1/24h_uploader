@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, render_template, redirect, url_for, session, send_file
+from flask import Flask, request, render_template, redirect, url_for, session, send_file, send_from_directory
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
 import zipfile
@@ -21,6 +21,12 @@ if not os.path.exists(UPLOAD_FOLDER):
 # 拡張子チェック関数
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# フォントファイルを静的ファイルとして提供するエンドポイント
+@app.route('/assets/fonts/<filename>')
+def serve_fonts(filename):
+    font_dir = os.path.join(app.root_path, 'assets/fonts')  # 'assets/fonts'フォルダへのパス
+    return send_from_directory(font_dir, filename)  # フォントファイルを返す
 
 # ログインページ
 @app.route('/', methods=['GET', 'POST'])
