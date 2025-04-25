@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>写真アップロード</h2>
+<form method="POST" enctype="multipart/form-data">
+    パスワード: <input type="password" name="password"><br>
+    写真選択: <input type="file" name="file"><br>
+    <input type="submit" value="アップロード">
+</form>
+{% endblock %}
