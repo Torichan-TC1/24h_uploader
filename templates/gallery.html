@@ -1,16 +1,24 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>ギャラリー</title>
-</head>
-<body>
-    <h1>ギャラリー</h1>
-    <ul>
+{% extends "base.html" %}
+
+{% block content %}
+<h1>ギャラリー</h1>
+
+<form id="downloadForm" method="POST" action="/download_selected">
+    <ul style="list-style: none; padding: 0;">
         {% for image in images %}
-        <li><img src="{{ url_for('static', filename='uploads/' + image) }}" alt="{{ image }}" width="100"></li>
+        <li style="display: inline-block; margin: 10px; text-align: center;">
+            <label style="cursor: pointer;">
+                <input type="checkbox" name="selected_images" value="{{ image }}">
+                <br>
+                <img src="{{ url_for('static', filename='uploads/' + image) }}" alt="{{ image }}" width="300"><br>
+                {{ image }}
+            </label>
+        </li>
         {% endfor %}
     </ul>
-    <a href="/upload">写真をアップロード</a>
-</body>
-</html>
+
+    <button type="submit">⬇ 選択した写真をダウンロード</button>
+</form>
+
+<a href="/upload">📤 写真をアップロード</a>
+{% endblock %}

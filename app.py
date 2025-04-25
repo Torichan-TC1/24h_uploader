@@ -1,24 +1,24 @@
 import os
-from flask import Flask, request, render_template, redirect, url_for, session
+from flask import Flask, request, render_template, redirect, url_for, session, send_file
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
+import zipfile
+import io
 
-# Flaskアプリケーションの設定
+# Flask アプリケーション設定
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # セッションのための秘密鍵
+app.secret_key = 'your_secret_key'  # セッション用の秘密鍵
 
-# アップロードフォルダの設定
+# アップロードフォルダ設定
 UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-# アップロードされるファイルの拡張子を制限する
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
-# パスがディレクトリでない or 存在しない場合のみ作成
+# アップロードフォルダがなければ作成
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
-# アップロード可能なファイルの拡張子を確認する関数
+# 拡張子チェック関数
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -27,27 +27,29 @@ def allowed_file(filename):
 def login():
     if request.method == 'POST':
         password = request.form['password']
-        if password == 'correctpassword':  # ここでパスワードをチェック
+        if password == '7':  # ✅ ログインパスワード
             session['logged_in'] = True
             return redirect(url_for('gallery'))
         else:
             return "パスワードが違います", 403
     return render_template('login.html')
 
-# ギャラリー表示ページ
+# ギャラリーページ
 @app.route('/gallery')
 def gallery():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
     
     images = os.listdir(app.config['UPLOAD_FOLDER'])
+    
+    # 24時間後の終了時間がセッションにない場合はセット
     if 'end_time' not in session:
-        session['end_time'] = (datetime.now() + timedelta(hours=24)).isoformat()  # 24時間後の終了時間を設定
+        session['end_time'] = (datetime.now() + timedelta(hours=24)).isoformat()
     
     end_time = datetime.fromisoformat(session['end_time'])
     return render_template('gallery.html', images=images, end_time=end_time)
 
-# アップロードページ
+# 写真アップロード
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     if not session.get('logged_in'):
@@ -65,21 +67,43 @@ def upload_file():
             return redirect(url_for('gallery'))
     return render_template('upload.html')
 
-# タイマー機能 (24時間後に写真を削除する)
-@app.route('/delete_photos', methods=['GET'])
+# 選択された画像を ZIP ダウンロード
+@app.route('/download_selected', methods=['POST'])
+def download_selected():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    selected_files = request.form.getlist('selected_images')
+    if not selected_files:
+        return redirect(url_for('gallery'))
+
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+        for filename in selected_files:
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            zip_file.write(file_path, arcname=filename)
+
+    zip_buffer.seek(0)
+    return send_file(
+        zip_buffer,
+        as_attachment=True,
+        download_name='selected_photos.zip',
+        mimetype='application/zip'
+    )
+
+# 24時間経過後に写真を削除
+@app.route('/delete_photos')
 def delete_photos():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
 
     if datetime.now() >= datetime.fromisoformat(session['end_time']):
         for image in os.listdir(app.config['UPLOAD_FOLDER']):
-            image_path = os.path.join(app.config['UPLOAD_FOLDER'], image)
-            os.remove(image_path)
-        session.pop('end_time', None)  # 終了時間を削除
+            os.remove(os.path.join(app.config['UPLOAD_FOLDER'], image))
+        session.pop('end_time', None)
     return redirect(url_for('gallery'))
 
-# アプリケーションの実行
+# アプリ起動
 if __name__ == '__main__':
-    # Renderではポートを環境変数で指定しているため、指定されたポートにバインドする
-    port = int(os.environ.get('PORT', 5000))  # 環境変数からポートを取得
+    port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
