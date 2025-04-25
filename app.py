@@ -1,6 +1,8 @@
 import os
+import threading
 from flask import Flask, request, render_template, redirect, url_for
 from werkzeug.utils import secure_filename
+import time
 
 # Flaskアプリケーションの設定
 app = Flask(__name__)
@@ -13,12 +15,9 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 # パスがディレクトリでない or 存在しない場合のみ作成
-if not os.path.isdir(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 print(f"Checking if {UPLOAD_FOLDER} exists and is a directory...")
-
-
 
 # アップロード可能なファイルの拡張子を確認する関数
 def allowed_file(filename):
@@ -44,21 +43,24 @@ def upload_file():
         file = request.files['file']
         if file.filename == '':
             return redirect(request.url)
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return redirect(url_for('gallery'))
+        if not allowed_file(file.filename):
+            return "File extension not allowed", 400  # 拡張子が許可されていない場合のエラーメッセージ
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        return redirect(url_for('gallery'))
     return render_template('upload.html')
 
 # タイマー機能 (24時間後に写真を削除する)
-@app.route('/delete_photos', methods=['GET'])
-def delete_photos():
-    # 24時間後にすべての画像ファイルを削除
-    import time
+def delete_photos_in_background():
     time.sleep(24 * 60 * 60)  # 24時間待機
     for image in os.listdir(app.config['UPLOAD_FOLDER']):
         image_path = os.path.join(app.config['UPLOAD_FOLDER'], image)
         os.remove(image_path)
+
+@app.route('/delete_photos', methods=['GET'])
+def delete_photos():
+    # 非同期でバックグラウンド処理を開始
+    threading.Thread(target=delete_photos_in_background).start()
     return redirect(url_for('gallery'))
 
 # アプリケーションの実行
