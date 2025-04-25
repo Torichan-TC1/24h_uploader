@@ -2,18 +2,21 @@
 <html>
 <head>
     <title>Photo Share</title>
-    <!-- 7セグ風フォント -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
     <style>
+        @font-face {
+            font-family: 'DSEG7ClassicMini';
+            src: url('{{ url_for('static', filename='fonts/DSEG7ClassicMini-Italic.ttf') }}') format('truetype');
+        }
+
         body {
             background-color: #000; /* 黒背景 */
             color: white;
             margin: 0;
-            font-family: sans-serif;
+            font-family: 'DSEG7ClassicMini', sans-serif; /* 7セグメントフォントを指定 */
         }
 
         .seven-segment {
-            font-family: 'Orbitron', sans-serif;
+            font-family: 'DSEG7ClassicMini', sans-serif; /* 7セグメントフォントを指定 */
             font-size: 3em;
             color: #ff2a00; /* 赤色タイマー */
             background-color: #000;
