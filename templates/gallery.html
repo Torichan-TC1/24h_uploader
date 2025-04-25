@@ -1,12 +1,17 @@
-{% extends "base.html" %}
-{% block content %}
-<h2>写真一覧</h2>
-<ul>
-{% for file in files %}
-    <li>
-        <img src="{{ url_for('uploaded_file', filename=file) }}" width="200px"><br>
-        <a href="{{ url_for('uploaded_file', filename=file) }}" download>ダウンロード</a>
-    </li>
-{% endfor %}
-</ul>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>ギャラリー</title>
+</head>
+<body>
+    <h1>ギャラリー</h1>
+    <ul>
+        {% for image in images %}
+        <li><img src="{{ url_for('static', filename='uploads/' + image) }}" alt="{{ image }}" width="100"></li>
+        {% endfor %}
+    </ul>
+    <a href="/upload">写真をアップロード</a>
+</body>
+</html>
+
