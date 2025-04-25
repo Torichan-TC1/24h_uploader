@@ -27,7 +27,7 @@ def allowed_file(filename):
 def login():
     if request.method == 'POST':
         password = request.form['password']
-        if password == '7':  # ✅ ログインパスワード
+        if password == '7':  # ログインパスワード
             session['logged_in'] = True
             return redirect(url_for('gallery'))
         else:
@@ -39,13 +39,16 @@ def login():
 def gallery():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
-    
+
     images = os.listdir(app.config['UPLOAD_FOLDER'])
-    
-    # 24時間後の終了時間がセッションにない場合はセット
+
+    # 翌日の0時を end_time に設定
     if 'end_time' not in session:
-        session['end_time'] = (datetime.now() + timedelta(hours=24)).isoformat()
-    
+        now = datetime.now()
+        tomorrow = now + timedelta(days=1)
+        end_of_day = datetime(tomorrow.year, tomorrow.month, tomorrow.day, 0, 0, 0)
+        session['end_time'] = end_of_day.isoformat()
+
     end_time = datetime.fromisoformat(session['end_time'])
     return render_template('gallery.html', images=images, end_time=end_time)
 
