@@ -20,7 +20,7 @@
             const diff = endTime - now;
             if (diff <= 0) {
                 document.getElementById("timer").innerText = "00:00:00";
-                location.reload();
+                location.href = "/delete_photos";  // タイマーが0になったら写真を削除
                 return;
             }
             const h = String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, '0');
