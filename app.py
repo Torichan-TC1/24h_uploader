@@ -24,7 +24,7 @@ def allowed_file(filename):
 def login():
     if request.method == 'POST':
         password = request.form['password']
-        if password == '7':
+        if password == 'robot01':
             session['logged_in'] = True
             return redirect(url_for('gallery'))
         else:
