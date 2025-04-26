@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, render_template, redirect, url_for, session, send_file, send_from_directory
+from flask import Flask, request, render_template, redirect, url_for, session, send_file
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
 import zipfile
@@ -22,18 +22,12 @@ if not os.path.exists(UPLOAD_FOLDER):
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# フォントファイルを静的ファイルとして提供するエンドポイント
-@app.route('/assets/fonts/<filename>')
-def serve_fonts(filename):
-    font_dir = os.path.join(app.root_path, 'assets/fonts')  # 'assets/fonts'フォルダへのパス
-    return send_from_directory(font_dir, filename)  # フォントファイルを返す
-
 # ログインページ
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         password = request.form['password']
-        if password == '7':  # ログインパスワード
+        if password == '7':
             session['logged_in'] = True
             return redirect(url_for('gallery'))
         else:
@@ -48,7 +42,6 @@ def gallery():
 
     images = os.listdir(app.config['UPLOAD_FOLDER'])
 
-    # 翌日の0時を end_time に設定
     if 'end_time' not in session:
         now = datetime.now()
         tomorrow = now + timedelta(days=1)
@@ -58,25 +51,50 @@ def gallery():
     end_time = datetime.fromisoformat(session['end_time'])
     return render_template('gallery.html', images=images, end_time=end_time)
 
-# 写真アップロード
+# アップロードページ（管理者のみ）
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
-    if not session.get('logged_in'):
+    if not session.get('admin_logged_in'):
         return redirect(url_for('login'))
 
     if request.method == 'POST':
         if 'file' not in request.files:
             return redirect(request.url)
-        file = request.files['file']
-        if file.filename == '':
-            return redirect(request.url)
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return redirect(url_for('gallery'))
+
+        files = request.files.getlist('file')
+
+        for file in files:
+            if file.filename == '':
+                continue
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+        return redirect(url_for('gallery'))
+
     return render_template('upload.html')
 
-# 選択された画像を ZIP ダウンロード
+# 管理者ログイン処理
+@app.route('/admin/login', methods=['POST'])
+def admin_login():
+    password = request.form.get('admin_password')
+    if password == 'adminpass':
+        session['admin_logged_in'] = True
+        return redirect(url_for('upload_file'))
+    else:
+        return "パスワードが間違っています", 403
+
+# 管理者ページ
+@app.route('/admin', methods=['GET', 'POST'])
+def admin():
+    if request.method == 'POST' and 'delete' in request.form:
+        for image in os.listdir(app.config['UPLOAD_FOLDER']):
+            os.remove(os.path.join(app.config['UPLOAD_FOLDER'], image))
+        return redirect(url_for('admin'))
+
+    return render_template('admin.html')
+
+# 選択された画像をZIPダウンロード
 @app.route('/download_selected', methods=['POST'])
 def download_selected():
     if not session.get('logged_in'):
@@ -100,7 +118,7 @@ def download_selected():
         mimetype='application/zip'
     )
 
-# 24時間経過後に写真を削除
+# 24時間後の自動削除
 @app.route('/delete_photos')
 def delete_photos():
     if not session.get('logged_in'):

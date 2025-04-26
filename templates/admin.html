@@ -6,24 +6,24 @@
 <body>
     <h1>管理者設定</h1>
 
-    <!-- アップロードフォーム -->
-    <form action="/admin" method="post" enctype="multipart/form-data">
+    <!-- 複数ファイルアップロード対応 -->
+    <form action="/admin/upload" method="post" enctype="multipart/form-data">
         <h3>画像をアップロード</h3>
         <input type="file" name="file" multiple>
         <button type="submit">アップロード</button>
     </form>
 
-    <!-- 削除フォーム -->
+    <!-- 画像削除 -->
     <form action="/admin" method="post">
         <h3>画像を削除</h3>
         <button type="submit" name="delete" value="true">すべて削除</button>
     </form>
 
-    <form action="/admin" method="post">
+    <!-- 管理者パスワード入力 -->
+    <form action="/admin/login" method="post">
         <h3>管理者パスワード</h3>
         <input type="password" name="admin_password" placeholder="管理者パスワード" required>
         <button type="submit">管理者設定</button>
     </form>
-
 </body>
 </html>
