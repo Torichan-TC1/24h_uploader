@@ -4,14 +4,14 @@
 <h1>ギャラリー</h1>
 
 <form id="downloadForm" method="POST" action="/download_selected">
-    <ul style="list-style: none; padding: 0;">
+    <ul>
         {% for image in images %}
-        <li style="display: inline-block; margin: 10px; text-align: center;">
-            <label style="cursor: pointer;">
+        <li>
+            <label>
                 <input type="checkbox" name="selected_images" value="{{ image }}">
                 <br>
-                <img src="{{ url_for('static', filename='uploads/' + image) }}" alt="{{ image }}" width="300"><br>
-                {{ image }}
+                <img src="{{ url_for('static', filename='uploads/' + image) }}" alt="{{ image }}">
+                <br>{{ image }}
             </label>
         </li>
         {% endfor %}
@@ -22,3 +22,4 @@
 
 <a href="/upload">📤 写真をアップロード</a>
 {% endblock %}
+

@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 import zipfile
 import io
 
-# Flask アプリケーション設定（assetsをstaticに指定）
 app = Flask(__name__, static_folder='assets')
 app.secret_key = 'your_secret_key'
 
