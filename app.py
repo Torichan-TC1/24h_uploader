@@ -13,23 +13,27 @@ UPLOAD_FOLDER = os.path.join(app.static_folder, 'uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
+# アップロードフォルダが存在しない場合は作成
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
+# アップロード可能な拡張子の確認関数
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+# ログインページ
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         password = request.form['password']
-        if password == '7':
+        if password == '7':  # 固定パスワード
             session['logged_in'] = True
             return redirect(url_for('gallery'))
         else:
             return "パスワードが違います", 403
     return render_template('login.html')
 
+# ギャラリーページ
 @app.route('/gallery')
 def gallery():
     if not session.get('logged_in'):
@@ -46,6 +50,7 @@ def gallery():
     end_time = datetime.fromisoformat(session['end_time'])
     return render_template('gallery.html', images=images, end_time=end_time)
 
+# 写真アップロードページ（GET はギャラリー表示で代用）
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     if not session.get('logged_in'):
@@ -61,8 +66,10 @@ def upload_file():
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             return redirect(url_for('gallery'))
-    return render_template('upload.html')
 
+    return redirect(url_for('gallery'))  # GETアクセス時はギャラリーに戻す
+
+# 選択写真のZIPダウンロード
 @app.route('/download_selected', methods=['POST'])
 def download_selected():
     if not session.get('logged_in'):
@@ -86,6 +93,7 @@ def download_selected():
         mimetype='application/zip'
     )
 
+# 写真削除処理（タイマー満了時）
 @app.route('/delete_photos')
 def delete_photos():
     if not session.get('logged_in'):
@@ -95,8 +103,10 @@ def delete_photos():
         for image in os.listdir(app.config['UPLOAD_FOLDER']):
             os.remove(os.path.join(app.config['UPLOAD_FOLDER'], image))
         session.pop('end_time', None)
+
     return redirect(url_for('gallery'))
 
+# アプリケーションの起動
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)

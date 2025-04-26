@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Photo Share</title>
     <style>
         @font-face {
@@ -30,6 +31,13 @@
             right: 2vw;
             z-index: 9999;
             white-space: nowrap;
+        }
+
+        /* メディアクエリでさらに小さい画面サイズに対応 */
+        @media (max-width: 600px) {
+            .seven-segment {
+                font-size: clamp(1.5rem, 8vw, 4rem);
+            }
         }
     </style>
 </head>
