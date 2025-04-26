@@ -3,6 +3,14 @@
 {% block content %}
 <h1>ギャラリー</h1>
 
+<!-- アップロードフォーム（複数ファイル対応） -->
+<form method="POST" action="/upload" enctype="multipart/form-data">
+    <input type="file" name="files" accept="image/*" multiple required>
+    <button type="submit">📤 写真をアップロード</button>
+</form>
+
+<hr>
+
 <form id="downloadForm" method="POST" action="/download_selected">
     <ul>
         {% for image in images %}
@@ -10,7 +18,7 @@
             <label>
                 <input type="checkbox" name="selected_images" value="{{ image }}">
                 <br>
-                <img src="{{ url_for('static', filename='uploads/' + image) }}" alt="{{ image }}">
+                <img src="{{ url_for('static', filename='uploads/' + image) }}" alt="{{ image }}" width="200">
                 <br>{{ image }}
             </label>
         </li>
@@ -19,7 +27,5 @@
 
     <button type="submit">⬇ 選択した写真をダウンロード</button>
 </form>
-
-<a href="/upload">📤 写真をアップロード</a>
 {% endblock %}
 

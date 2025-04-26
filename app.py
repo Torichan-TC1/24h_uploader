@@ -5,35 +5,32 @@ from datetime import datetime, timedelta
 import zipfile
 import io
 
-# Flask アプリケーション設定（assetsをstaticに指定）
+# Flask アプリケーション設定
 app = Flask(__name__, static_folder='assets')
 app.secret_key = 'your_secret_key'
 
 UPLOAD_FOLDER = os.path.join(app.static_folder, 'uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 最大16MB
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
-# アップロードフォルダが存在しない場合は作成
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
-# アップロード可能な拡張子の確認関数
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# ログインページ
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         password = request.form['password']
-        if password == '7':  # 固定パスワード
+        if password == '7':
             session['logged_in'] = True
             return redirect(url_for('gallery'))
         else:
             return "パスワードが違います", 403
     return render_template('login.html')
 
-# ギャラリーページ
 @app.route('/gallery')
 def gallery():
     if not session.get('logged_in'):
@@ -50,26 +47,31 @@ def gallery():
     end_time = datetime.fromisoformat(session['end_time'])
     return render_template('gallery.html', images=images, end_time=end_time)
 
-# 写真アップロードページ（GET はギャラリー表示で代用）
-@app.route('/upload', methods=['GET', 'POST'])
+@app.route('/upload', methods=['POST'])
 def upload_file():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
 
-    if request.method == 'POST':
-        if 'file' not in request.files:
-            return redirect(request.url)
-        file = request.files['file']
-        if file.filename == '':
-            return redirect(request.url)
+    if 'files' not in request.files:
+        print("ファイルが見つかりません")
+        return redirect(request.url)
+
+    files = request.files.getlist('files')
+    if not files:
+        print("ファイルが空です")
+        return redirect(request.url)
+
+    for file in files:
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return redirect(url_for('gallery'))
+            save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(save_path)
+            print(f"保存: {filename}")
+        else:
+            print(f"無効なファイル形式: {file.filename}")
 
-    return redirect(url_for('gallery'))  # GETアクセス時はギャラリーに戻す
+    return redirect(url_for('gallery'))
 
-# 選択写真のZIPダウンロード
 @app.route('/download_selected', methods=['POST'])
 def download_selected():
     if not session.get('logged_in'):
@@ -93,7 +95,6 @@ def download_selected():
         mimetype='application/zip'
     )
 
-# 写真削除処理（タイマー満了時）
 @app.route('/delete_photos')
 def delete_photos():
     if not session.get('logged_in'):
@@ -106,7 +107,6 @@ def delete_photos():
 
     return redirect(url_for('gallery'))
 
-# アプリケーションの起動
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
