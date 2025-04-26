@@ -6,7 +6,7 @@ import zipfile
 import io
 
 # Flask アプリケーション設定
-app = Flask(__name__, static_folder='assets')  # static_folder を assets に設定
+app = Flask(__name__, static_folder='assets')  # static_folder を 'assets' に設定
 app.secret_key = 'your_secret_key'  # セッション用の秘密鍵
 
 # アップロードフォルダ設定
@@ -110,3 +110,4 @@ def delete_photos():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
+
