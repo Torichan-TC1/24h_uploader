@@ -2,93 +2,14 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ログイン</title>
-    <style>
-        @font-face {
-            font-family: 'DSEG14ClassicMini';
-            src: url('/assets/fonts/DSEG14ClassicMini-BoldItalic.ttf') format('truetype');
-        }
-
-        body {
-            background-color: #000;
-            color: white;
-            font-family: 'DSEG14ClassicMini', sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            padding: 0;
-        }
-
-        .login-container {
-            background-color: #111;
-            padding: 20px;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-            text-align: center;
-        }
-
-        h1 {
-            font-size: 1.8em;
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            text-align: left;
-            margin-bottom: 5px;
-            font-size: 1.1em;
-        }
-
-        input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            font-size: 1em;
-            border: none;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            background-color: #222;
-            color: white;
-        }
-
-        button {
-            width: 100%;
-            padding: 10px;
-            font-size: 1.1em;
-            background-color: #00ffff;
-            color: black;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #00dddd;
-        }
-
-        @media (max-width: 480px) {
-            h1 {
-                font-size: 1.4em;
-            }
-
-            input, button {
-                font-size: 1em;
-            }
-        }
-    </style>
+    <title>管理者ログイン</title>
 </head>
 <body>
-    <div class="login-container">
-        <h1>ログインページ</h1>
-        <form action="/" method="POST">
-            <label for="password">パスワード:</label>
-            <input type="password" name="password" id="password" required>
-            <button type="submit">ログイン</button>
-        </form>
-    </div>
+    <h1>管理者ログイン</h1>
+    <form action="/" method="POST">
+        <label for="password">パスワード:</label>
+        <input type="password" name="password" id="password" required>
+        <button type="submit">ログイン</button>
+    </form>
 </body>
 </html>
