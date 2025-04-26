@@ -1,15 +1,11 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>アップロード</title>
-</head>
-<body>
-    <h1>写真アップロード</h1>
-    <form action="/upload" method="post" enctype="multipart/form-data">
-        <label for="file">ファイルを選択</label>
-        <input type="file" name="file" id="file" required>
-        <button type="submit">アップロード</button>
-    </form>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block content %}
+<h1>写真アップロード</h1>
+
+<form action="/upload" method="post" enctype="multipart/form-data">
+    <label for="file">ファイルを選択（複数可）</label>
+    <input type="file" name="file" id="file" multiple required>
+    <button type="submit">アップロード</button>
+</form>
+{% endblock %}
