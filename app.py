@@ -34,6 +34,16 @@ def login():
             return "パスワードが違います", 403
     return render_template('login.html')
 
+# 管理者ログイン
+@app.route('/admin/login', methods=['POST'])
+def developer_login():  # admin_login -> developer_loginに変更
+    password = request.form.get('admin_password')
+    if password == 'hato_0421':
+        session['admin_logged_in'] = True
+        return redirect(url_for('upload_file'))
+    else:
+        return render_template('admin.html', error_message="パスワードが間違っています")
+
 # ギャラリーページ
 @app.route('/gallery')
 def gallery():
@@ -55,19 +65,20 @@ def gallery():
 # 写真アップロード
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
+    if not session.get('admin_logged_in'):
+        return redirect(url_for('developer_login'))
 
     if request.method == 'POST':
-        if 'file' not in request.files:
+        files = request.files.getlist('file')  # 複数ファイルを取得
+        if not files:
             return redirect(request.url)
-        file = request.files['file']
-        if file.filename == '':
-            return redirect(request.url)
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return redirect(url_for('gallery'))
+        
+        for file in files:
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+        return redirect(url_for('gallery'))
     return render_template('upload.html')
 
 # 選択された画像を ZIP ダウンロード
@@ -105,23 +116,6 @@ def delete_photos():
             os.remove(os.path.join(app.config['UPLOAD_FOLDER'], image))
         session.pop('end_time', None)
     return redirect(url_for('gallery'))
-
-# 管理者設定画面
-@app.route('/admin')
-def admin():
-    if not session.get('admin_logged_in'):
-        return redirect(url_for('admin_login'))
-    return render_template('admin.html')
-
-# 管理者ログイン処理
-@app.route('/admin/login', methods=['POST'])
-def developer_login():  # admin_login -> developer_loginに変更
-    password = request.form.get('admin_password')
-    if password == 'hato_0421':
-        session['admin_logged_in'] = True
-        return redirect(url_for('upload_file'))
-    else:
-        return "パスワードが間違っています", 403
 
 # アプリ起動
 if __name__ == '__main__':

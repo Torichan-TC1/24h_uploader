@@ -11,7 +11,7 @@
                 <input type="checkbox" name="selected_images" value="{{ image }}">
                 <br>
                 <img src="{{ url_for('static', filename='uploads/' + image) }}" alt="{{ image }}" width="300"><br>
-                <div class="seven-segment">{{ image }}</div>  <!-- 画像名を7セグメントフォントで表示 -->
+                {{ image }}
             </label>
         </li>
         {% endfor %}
@@ -20,5 +20,6 @@
     <button type="submit">⬇ 選択した写真をダウンロード</button>
 </form>
 
-<a href="/upload">📤 写真をアップロード</a>
+<a href="/upload">📤 写真アップロード</a>
 {% endblock %}
+
