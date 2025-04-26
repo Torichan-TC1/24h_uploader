@@ -6,11 +6,11 @@ import zipfile
 import io
 
 # Flask アプリケーション設定
-app = Flask(__name__)
+app = Flask(__name__, static_folder='assets')  # static_folder を assets に設定
 app.secret_key = 'your_secret_key'  # セッション用の秘密鍵
 
 # アップロードフォルダ設定
-UPLOAD_FOLDER = 'static/uploads'
+UPLOAD_FOLDER = 'assets/uploads'  # assets 内にアップロードフォルダ
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
@@ -27,32 +27,12 @@ def allowed_file(filename):
 def login():
     if request.method == 'POST':
         password = request.form['password']
-        if password == 'hato_0421':  # ログインパスワード
+        if password == '7':  # ログインパスワード
             session['logged_in'] = True
-            return redirect(url_for('upload_file'))  # アップロード画面にリダイレクト
+            return redirect(url_for('gallery'))
         else:
             return "パスワードが違います", 403
     return render_template('login.html')
-
-# アップロードページ
-@app.route('/upload', methods=['GET', 'POST'])
-def upload_file():
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
-
-    if request.method == 'POST':
-        # 複数ファイルアップロード対応
-        if 'file' not in request.files:
-            return redirect(request.url)
-        files = request.files.getlist('file')  # 複数ファイルを取得
-        for file in files:
-            if file.filename == '':
-                continue
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        return redirect(url_for('gallery'))
-    return render_template('upload.html')
 
 # ギャラリーページ
 @app.route('/gallery')
@@ -73,6 +53,24 @@ def gallery():
     return render_template('gallery.html', images=images, end_time=end_time)
 
 # 写真アップロード
+@app.route('/upload', methods=['GET', 'POST'])
+def upload_file():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            return redirect(request.url)
+        file = request.files['file']
+        if file.filename == '':
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return redirect(url_for('gallery'))
+    return render_template('upload.html')
+
+# 選択された画像を ZIP ダウンロード
 @app.route('/download_selected', methods=['POST'])
 def download_selected():
     if not session.get('logged_in'):
