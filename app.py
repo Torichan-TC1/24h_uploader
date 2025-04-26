@@ -23,15 +23,14 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # ログインページ
-@app.route('/', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        password = request.form['password']
-        if password == '7':
-            session['logged_in'] = True
-            return redirect(url_for('gallery'))
-        else:
-            return "パスワードが違います", 403
+@app.route('/admin/login', methods=['POST'])
+def admin_login():
+    password = request.form.get('admin_password')
+    if password == 'hato_0421':
+        session['admin_logged_in'] = True
+        return redirect(url_for('upload_file'))
+    else:
+        return "パスワードが間違っています", 403
     return render_template('login.html')
 
 # ギャラリーページ
