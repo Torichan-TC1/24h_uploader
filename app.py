@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import zipfile
 import io
 
+# Flask アプリケーション設定（assetsをstaticに指定）
 app = Flask(__name__, static_folder='assets')
 app.secret_key = 'your_secret_key'
 
@@ -51,13 +52,15 @@ def upload_file():
         return redirect(url_for('login'))
 
     if request.method == 'POST':
-        files = request.files.getlist('file')
-        for file in files:
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        return redirect(url_for('gallery'))
-
+        if 'file' not in request.files:
+            return redirect(request.url)
+        file = request.files['file']
+        if file.filename == '':
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return redirect(url_for('gallery'))
     return render_template('upload.html')
 
 @app.route('/download_selected', methods=['POST'])
