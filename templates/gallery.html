@@ -8,5 +8,16 @@
         {% for image in images %}
         <li>
             <label>
-                <input type
+                <input type="checkbox" name="selected_images" value="{{ image }}">
+                <img src="{{ url_for('static', filename='uploads/' + image) }}" alt="{{ image }}">
+                {{ image }}
+            </label>
+        </li>
+        {% endfor %}
+    </ul>
 
+    <button type="submit">⬇ 選択した写真をダウンロード</button>
+</form>
+
+<a href="/upload">📤 写真をアップロード</a>
+{% endblock %}
