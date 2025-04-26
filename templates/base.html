@@ -2,113 +2,33 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- ビューポート設定 -->
-    <title>Photo Share</title>
-    <style>
-        @font-face {
-            font-family: 'DSEG7';
-            src: url("{{ url_for('static', filename='fonts/DSEG7ClassicMini-BoldItalic.ttf') }}") format('truetype');
-        }
-
-        body {
-            background-color: #000;
-            color: white;
-            margin: 0;
-            font-family: 'DSEG7', sans-serif;
-            padding: 0;
-        }
-
-        .seven-segment {
-            font-family: 'DSEG7', sans-serif;
-            font-size: clamp(2rem, 6vw, 6rem); /* スクリーン幅に応じてサイズ可変 */
-            color: #ff2a00;
-            background-color: #000;
-            padding: 0.5em 1em;
-            border-radius: 10px;
-            display: inline-block;
-            letter-spacing: 0.1em;
-            position: fixed;
-            top: 1vh;
-            right: 2vw;
-            z-index: 9999;
-            white-space: nowrap;
-        }
-
-        h1, h3 {
-            text-align: center;
-            font-size: clamp(2rem, 5vw, 3rem);
-        }
-
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        ul {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            list-style-type: none;
-            padding: 0;
-        }
-
-        li {
-            margin: 1rem;
-            text-align: center;
-            width: calc(33.33% - 2rem);
-            box-sizing: border-box;
-        }
-
-        img {
-            width: 100%;
-            max-width: 300px;
-            height: auto;
-            border-radius: 10px;
-        }
-
-        button {
-            display: block;
-            width: 100%;
-            padding: 1rem;
-            background-color: #00ffff;
-            color: #000;
-            font-size: 1.5rem;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #00bbbb;
-        }
-
-        input[type="file"] {
-            display: block;
-            width: 100%;
-            margin-top: 1rem;
-        }
-
-        a {
-            display: block;
-            text-align: center;
-            color: #00ffff;
-            margin-top: 2rem;
-        }
-
-        @media (max-width: 768px) {
-            li {
-                width: 100%; /* 小さい画面で1列表示 */
-            }
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>24時間アップローダー</title>
 </head>
 <body>
-    <div class="seven-segment" id="timer">00:00:00.00</div>
+    <h1>24時間アップローダー</h1>
+
+    <!-- 残り時間の表示 -->
+    <div>
+        <h2>残り時間</h2>
+        <p id="timer"></p>
+    </div>
+
+    <!-- ページコンテンツ（個別のページで上書きされる部分） -->
+    {% block content %}
+    {% endblock %}
+
+    <!-- フッター部分 -->
+    <footer>
+        <p>© 2025 24時間アップローダー</p>
+    </footer>
 
     <script>
-        const endTime = new Date("{{ end_time.isoformat() }}");
+        {% if end_time %}
+            const endTime = new Date("{{ end_time.isoformat() }}");
+        {% else %}
+            const endTime = new Date();  // end_timeがない場合、現在時刻を使用
+        {% endif %}
 
         function updateTimer() {
             const now = new Date();
@@ -116,7 +36,7 @@
 
             if (diff <= 0) {
                 document.getElementById("timer").innerText = "00:00:00.00";
-                location.href = "/delete_photos";
+                location.href = "/delete_photos";  // 時間切れになったらリダイレクト
                 return;
             }
 
@@ -128,13 +48,9 @@
             document.getElementById("timer").innerText = `${h}:${m}:${s}.${cs}`;
         }
 
-        setInterval(updateTimer, 10); // 1/100秒更新
-        updateTimer();
+        setInterval(updateTimer, 10); // 1/100秒ごとにタイマーを更新
+        updateTimer();  // 初回のタイマー更新
     </script>
-
-    <div class="container">
-        {% block content %}{% endblock %}
-    </div>
 </body>
 </html>
 
